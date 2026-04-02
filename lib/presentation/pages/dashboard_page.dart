@@ -79,6 +79,8 @@ class DashboardPage extends ConsumerWidget {
                                       color: Colors.white70,
                                       fontWeight: FontWeight.w500,
                                     ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
@@ -87,6 +89,8 @@ class DashboardPage extends ConsumerWidget {
                                       color: Colors.white,
                                       fontWeight: FontWeight.bold,
                                     ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 ],
                               ),
