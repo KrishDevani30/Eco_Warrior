@@ -3,50 +3,39 @@ import '../../data/repositories/local_repository.dart';
 import '../../data/models/waste_log_model.dart';
 import '../../data/models/pickup_request_model.dart';
 
-final wasteLogsProvider = StateNotifierProvider<WasteLogNotifier, List<WasteLogModel>>((ref) {
-  return WasteLogNotifier(ref.watch(localRepositoryProvider));
+final wasteLogsProvider = NotifierProvider<WasteLogNotifier, List<WasteLogModel>>(() {
+  return WasteLogNotifier();
 });
 
-class WasteLogNotifier extends StateNotifier<List<WasteLogModel>> {
-  final LocalRepository _repository;
-
-  WasteLogNotifier(this._repository) : super([]) {
-    _loadLogs();
-  }
-
-  void _loadLogs() {
-    state = _repository.getWasteLogs();
+class WasteLogNotifier extends Notifier<List<WasteLogModel>> {
+  @override
+  List<WasteLogModel> build() {
+    return ref.watch(localRepositoryProvider).getWasteLogs();
   }
 
   Future<void> addLog(WasteLogModel log) async {
-    await _repository.addWasteLog(log);
-    _loadLogs(); // Refresh state
+    await ref.read(localRepositoryProvider).addWasteLog(log);
+    state = ref.read(localRepositoryProvider).getWasteLogs();
   }
 }
 
-final pickupRequestsProvider = StateNotifierProvider<PickupRequestNotifier, List<PickupRequestModel>>((ref) {
-  return PickupRequestNotifier(ref.watch(localRepositoryProvider));
+final pickupRequestsProvider = NotifierProvider<PickupRequestNotifier, List<PickupRequestModel>>(() {
+  return PickupRequestNotifier();
 });
 
-class PickupRequestNotifier extends StateNotifier<List<PickupRequestModel>> {
-  final LocalRepository _repository;
-
-  PickupRequestNotifier(this._repository) : super([]) {
-    _loadRequests();
-  }
-
-  void _loadRequests() {
-    state = _repository.getPickups();
+class PickupRequestNotifier extends Notifier<List<PickupRequestModel>> {
+  @override
+  List<PickupRequestModel> build() {
+    return ref.watch(localRepositoryProvider).getPickups();
   }
 
   Future<void> addRequest(PickupRequestModel request) async {
-    await _repository.addPickup(request);
-    _loadRequests();
+    await ref.read(localRepositoryProvider).addPickup(request);
+    state = ref.read(localRepositoryProvider).getPickups();
   }
 }
 
-final userPointsProvider = StateProvider<int>((ref) {
-  // Simple mock points calculation based on items logged + pickups scheduled
+final userPointsProvider = Provider<int>((ref) {
   final logs = ref.watch(wasteLogsProvider);
   final pickups = ref.watch(pickupRequestsProvider);
   return (logs.length * 10) + (pickups.length * 50);

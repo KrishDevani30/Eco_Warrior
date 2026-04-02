@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
+import '../widgets/premium_header.dart';
 import '../../data/models/waste_log_model.dart';
 import '../providers/app_state_provider.dart';
 
@@ -39,8 +40,13 @@ class _LogWastePageState extends ConsumerState<LogWastePage> {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
 
-    return Padding(
-      padding: const EdgeInsets.all(24.0),
+    return CustomScrollView(
+      slivers: [
+        const PremiumHeader(title: 'Log Waste', subtitle: 'Every item counts', icon: Icons.recycling),
+        SliverFillRemaining(
+          hasScrollBody: false,
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -106,6 +112,9 @@ class _LogWastePageState extends ConsumerState<LogWastePage> {
           ),
         ],
       ),
-    );
+    ),
+  ),
+],
+);
   }
 }

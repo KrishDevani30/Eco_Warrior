@@ -27,9 +27,6 @@ class _HomePageState extends State<HomePage> {
     final colors = Theme.of(context).colorScheme;
     
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('EcoSmart Dashboard'),
-      ),
       body: _pages[_currentIndex],
       bottomNavigationBar: NavigationBar(
         selectedIndex: _currentIndex,

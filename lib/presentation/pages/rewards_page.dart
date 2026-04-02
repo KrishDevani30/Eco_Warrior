@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../widgets/premium_header.dart';
 import '../providers/app_state_provider.dart';
 
 class RewardsPage extends ConsumerWidget {
@@ -10,8 +11,12 @@ class RewardsPage extends ConsumerWidget {
     final points = ref.watch(userPointsProvider);
     final colors = Theme.of(context).colorScheme;
     
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
+    return CustomScrollView(
+      slivers: [
+        const PremiumHeader(title: 'Rewards', subtitle: 'Redeem your points', icon: Icons.star),
+        SliverFillRemaining(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -48,7 +53,10 @@ class RewardsPage extends ConsumerWidget {
           ),
         ],
       ),
-    );
+    ),
+  ),
+],
+);
   }
 }
 

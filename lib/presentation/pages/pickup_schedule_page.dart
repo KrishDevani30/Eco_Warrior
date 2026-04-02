@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import 'dart:math';
 import '../../data/models/pickup_request_model.dart';
+import '../widgets/premium_header.dart';
 import '../providers/app_state_provider.dart';
 
 class PickupSchedulePage extends ConsumerStatefulWidget {
@@ -20,10 +21,12 @@ class _PickupSchedulePageState extends ConsumerState<PickupSchedulePage> {
   void _fetchLocation() async {
     setState(() => _isFetching = true);
     await Future.delayed(const Duration(seconds: 1)); // Simulate GPS delay
-    setState(() {
-      _simulatedAddress = '123 Smart City Avenue, District ${Random().nextInt(9) + 1}';
-      _isFetching = false;
-    });
+    if (mounted) {
+      setState(() {
+        _simulatedAddress = '123 Smart City Avenue, District ${Random().nextInt(9) + 1}';
+        _isFetching = false;
+      });
+    }
   }
 
   void _schedule() {
@@ -58,8 +61,12 @@ class _PickupSchedulePageState extends ConsumerState<PickupSchedulePage> {
     final colors = Theme.of(context).colorScheme;
     final requests = ref.watch(pickupRequestsProvider);
     
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
+    return CustomScrollView(
+      slivers: [
+        const PremiumHeader(title: 'Schedule Pickup', subtitle: 'We come to you', icon: Icons.local_shipping),
+        SliverFillRemaining(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -132,6 +139,9 @@ class _PickupSchedulePageState extends ConsumerState<PickupSchedulePage> {
           ),
         ],
       ),
-    );
+    ),
+  ),
+],
+);
   }
 }
