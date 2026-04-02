@@ -1,50 +1,47 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'pickup_request_model.dart';
+part of 'waste_log_model.dart';
 
 // **************************************************************************
 // TypeAdapterGenerator
 // **************************************************************************
 
-class PickupRequestModelAdapter extends TypeAdapter<PickupRequestModel> {
+class WasteLogModelAdapter extends TypeAdapter<WasteLogModel> {
   @override
-  final int typeId = 2;
+  final int typeId = 1;
 
   @override
-  PickupRequestModel read(BinaryReader reader) {
+  WasteLogModel read(BinaryReader reader) {
     final numOfFields = reader.readByte();
     final fields = <int, dynamic>{
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
-    return PickupRequestModel(
+    return WasteLogModel(
       id: fields[0] as String,
-      scheduledDate: fields[1] as DateTime,
-      address: fields[2] as String,
-      latitude: fields[3] as double,
-      longitude: fields[4] as double,
-      status: fields[5] as String,
-      userId: fields[6] as String,
+      category: fields[1] as String,
+      quantity: fields[2] as double,
+      date: fields[3] as DateTime,
+      isSynced: fields[4] as bool,
+      imagePath: fields[5] as String?,
     );
   }
 
   @override
-  void write(BinaryWriter writer, PickupRequestModel obj) {
+  void write(BinaryWriter writer, WasteLogModel obj) {
     writer
-      ..writeByte(7)
+      ..writeByte(6)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
-      ..write(obj.scheduledDate)
+      ..write(obj.category)
       ..writeByte(2)
-      ..write(obj.address)
+      ..write(obj.quantity)
       ..writeByte(3)
-      ..write(obj.latitude)
+      ..write(obj.date)
       ..writeByte(4)
-      ..write(obj.longitude)
+      ..write(obj.isSynced)
       ..writeByte(5)
-      ..write(obj.status)
-      ..writeByte(6)
-      ..write(obj.userId);
+      ..write(obj.imagePath);
   }
 
   @override
@@ -53,7 +50,7 @@ class PickupRequestModelAdapter extends TypeAdapter<PickupRequestModel> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is PickupRequestModelAdapter &&
+      other is WasteLogModelAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }

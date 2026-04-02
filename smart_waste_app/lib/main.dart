@@ -4,14 +4,22 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'core/theme/app_theme.dart';
 import 'core/routing/app_router.dart';
 
+import 'data/repositories/local_repository.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
   // Initialize Local Storage
   await Hive.initFlutter();
-  // Register adapters here later...
+  final repo = LocalRepository();
+  await repo.init();
   
-  runApp(const ProviderScope(child: SmartWasteApp()));
+  runApp(ProviderScope(
+    overrides: [
+      localRepositoryProvider.overrideWithValue(repo),
+    ],
+    child: const SmartWasteApp(),
+  ));
 }
 
 class SmartWasteApp extends StatelessWidget {

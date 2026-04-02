@@ -22,6 +22,9 @@ class WasteLogModel extends HiveObject {
   @HiveField(5)
   final String? imagePath;
 
+  @HiveField(6)
+  final String userId;
+
   WasteLogModel({
     required this.id,
     required this.category,
@@ -29,5 +32,6 @@ class WasteLogModel extends HiveObject {
     required this.date,
     this.isSynced = false,
     this.imagePath,
+    required this.userId,
   });
 }

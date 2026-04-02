@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 
+import 'dashboard_page.dart';
+import 'log_waste_page.dart';
+import 'pickup_schedule_page.dart';
+import 'rewards_page.dart';
+
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -11,10 +16,10 @@ class _HomePageState extends State<HomePage> {
   int _currentIndex = 0;
 
   final List<Widget> _pages = const [
-    Center(child: Text('Dashboard (Logs & Activity)')),
-    Center(child: Text('Waste Logging')),
-    Center(child: Text('Pickup Schedule')),
-    Center(child: Text('Rewards')),
+    DashboardPage(),
+    LogWastePage(),
+    PickupSchedulePage(),
+    RewardsPage(),
   ];
 
   @override
@@ -22,9 +27,6 @@ class _HomePageState extends State<HomePage> {
     final colors = Theme.of(context).colorScheme;
     
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('EcoSmart Dashboard'),
-      ),
       body: _pages[_currentIndex],
       bottomNavigationBar: NavigationBar(
         selectedIndex: _currentIndex,

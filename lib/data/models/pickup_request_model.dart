@@ -22,6 +22,9 @@ class PickupRequestModel extends HiveObject {
   @HiveField(5)
   final String status; // 'Pending', 'Assigned', 'Completed'
 
+  @HiveField(6)
+  final String userId;
+
   PickupRequestModel({
     required this.id,
     required this.scheduledDate,
@@ -29,5 +32,6 @@ class PickupRequestModel extends HiveObject {
     required this.latitude,
     required this.longitude,
     required this.status,
+    required this.userId,
   });
 }
