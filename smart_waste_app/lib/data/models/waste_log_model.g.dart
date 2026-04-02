@@ -24,13 +24,15 @@ class WasteLogModelAdapter extends TypeAdapter<WasteLogModel> {
       isSynced: fields[4] as bool,
       imagePath: fields[5] as String?,
       userId: fields[6] as String,
+      pickupStatus: fields[7] as String,
+      location: fields[8] as String,
     );
   }
 
   @override
   void write(BinaryWriter writer, WasteLogModel obj) {
     writer
-      ..writeByte(7)
+      ..writeByte(9)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -44,7 +46,11 @@ class WasteLogModelAdapter extends TypeAdapter<WasteLogModel> {
       ..writeByte(5)
       ..write(obj.imagePath)
       ..writeByte(6)
-      ..write(obj.userId);
+      ..write(obj.userId)
+      ..writeByte(7)
+      ..write(obj.pickupStatus)
+      ..writeByte(8)
+      ..write(obj.location);
   }
 
   @override

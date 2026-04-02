@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:ui';
 import '../providers/app_state_provider.dart';
+import '../providers/theme_provider.dart';
+import '../../data/models/waste_log_model.dart';
 
 class DashboardPage extends ConsumerWidget {
   const DashboardPage({super.key});
@@ -95,17 +97,30 @@ class DashboardPage extends ConsumerWidget {
                                 ],
                               ),
                             ),
-                            Container(
-                              padding: const EdgeInsets.all(3),
-                              decoration: const BoxDecoration(
-                                color: Colors.white24,
-                                shape: BoxShape.circle,
-                              ),
-                              child: const CircleAvatar(
-                                radius: 24,
-                                backgroundColor: Colors.white,
-                                child: Icon(Icons.person, color: Colors.grey),
-                              ),
+                            Row(
+                              children: [
+                                IconButton(
+                                  icon: Icon(ref.watch(themeProvider) == ThemeMode.dark ? Icons.light_mode : Icons.dark_mode, color: Colors.white),
+                                  onPressed: () => ref.read(themeProvider.notifier).toggleTheme(),
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.logout, color: Colors.redAccent),
+                                  onPressed: () => ref.read(currentUserProvider.notifier).logout(),
+                                ),
+                                const SizedBox(width: 8),
+                                Container(
+                                  padding: const EdgeInsets.all(3),
+                                  decoration: const BoxDecoration(
+                                    color: Colors.white24,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const CircleAvatar(
+                                    radius: 24,
+                                    backgroundColor: Colors.white,
+                                    child: Icon(Icons.person, color: Colors.grey),
+                                  ),
+                                ),
+                              ],
                             )
                           ],
                         ),
@@ -185,6 +200,8 @@ class DashboardPage extends ConsumerWidget {
                         itemBuilder: (context, index) {
                           final log = logs[index];
                           final catData = _getCategoryData(log.category);
+                          final statusColor = _getStatusColor(log.pickupStatus);
+                          
                           return Container(
                             decoration: BoxDecoration(
                               color: colors.surface,
@@ -197,36 +214,65 @@ class DashboardPage extends ConsumerWidget {
                                 )
                               ],
                             ),
-                            child: ListTile(
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                              leading: Container(
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  color: catData.color.withOpacity(0.15),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: Icon(catData.icon, color: catData.color),
-                              ),
-                              title: Text(
-                                log.category,
-                                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
-                              ),
-                              subtitle: Text(
-                                '${log.date.day}/${log.date.month}/${log.date.year} • Earned +10 pts',
-                                style: TextStyle(color: Colors.grey[600], fontSize: 13),
-                              ),
-                              trailing: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  Text(
+                            child: Column(
+                              children: [
+                                ListTile(
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                                  leading: Container(
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      color: catData.color.withOpacity(0.15),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Icon(catData.icon, color: catData.color),
+                                  ),
+                                  title: Text(
+                                    log.category,
+                                    style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+                                  ),
+                                  subtitle: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        '${log.date.day}/${log.date.month}/${log.date.year}',
+                                        style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                        decoration: BoxDecoration(
+                                          color: statusColor.withOpacity(0.1),
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                        child: Text(
+                                          log.pickupStatus,
+                                          style: TextStyle(color: statusColor, fontSize: 10, fontWeight: FontWeight.bold),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  trailing: Text(
                                     '${log.quantity} kg',
                                     style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
                                   ),
-                                  const SizedBox(height: 4),
-                                  const Icon(Icons.check_circle, color: Colors.green, size: 16),
-                                ],
-                              ),
+                                ),
+                                if (log.pickupStatus == 'Not Requested')
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 20, right: 20, bottom: 12),
+                                    child: SizedBox(
+                                      width: double.infinity,
+                                      child: OutlinedButton.icon(
+                                        onPressed: () => _showRequestDialog(context, ref, log),
+                                        icon: const Icon(Icons.local_shipping, size: 16),
+                                        label: const Text('Request Pickup'),
+                                        style: OutlinedButton.styleFrom(
+                                          visualDensity: VisualDensity.compact,
+                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                              ],
                             ),
                           );
                         },
@@ -239,6 +285,53 @@ class DashboardPage extends ConsumerWidget {
         ),
       );
     }
+
+  Color _getStatusColor(String status) {
+    switch (status) {
+      case 'Requested': return Colors.orange;
+      case 'Approved': return Colors.blue;
+      case 'Completed': return Colors.green;
+      case 'Rejected': return Colors.red;
+      default: return Colors.grey;
+    }
+  }
+
+  void _showRequestDialog(BuildContext context, WidgetRef ref, WasteLogModel log) {
+    final controller = TextEditingController(text: log.location);
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Request Pickup'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Confirm your pickup address:'),
+            const SizedBox(height: 16),
+            TextField(
+              controller: controller,
+              decoration: const InputDecoration(
+                labelText: 'Address',
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          ElevatedButton(
+            onPressed: () {
+              ref.read(wasteLogsProvider.notifier).requestPickupFromLog(log, controller.text);
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Pickup requested successfully! 🚛')),
+              );
+            },
+            child: const Text('Confirm'),
+          ),
+        ],
+      ),
+    );
+  }
 
   _CategoryData _getCategoryData(String category) {
     var lower = category.toLowerCase();
@@ -314,6 +407,7 @@ class _PremiumSummaryCard extends StatelessWidget {
                   iconColor: Colors.orange,
                   value: points.toString(),
                   label: 'Eco Points',
+                  subLabel: 'On Complete',
                 ),
               ],
             ),
@@ -329,12 +423,14 @@ class _StatItem extends StatelessWidget {
   final Color iconColor;
   final String value;
   final String label;
+  final String? subLabel;
 
   const _StatItem({
     required this.icon,
     required this.iconColor,
     required this.value,
     required this.label,
+    this.subLabel,
   });
 
   @override
@@ -359,6 +455,11 @@ class _StatItem extends StatelessWidget {
           label,
           style: TextStyle(fontSize: 12, color: Colors.grey[600], fontWeight: FontWeight.w500),
         ),
+        if (subLabel != null)
+           Text(
+             subLabel!,
+             style: TextStyle(fontSize: 9, color: Colors.grey[400]),
+           ),
       ],
     );
   }

@@ -72,7 +72,22 @@ class ProfilePage extends ConsumerWidget {
                   _buildSectionTitle('Eco Achievements'),
                   const SizedBox(height: 12),
                   _buildAchievementGrid(logs.length, totalWeight),
-                  const SizedBox(height: 40),
+                  const SizedBox(height: 32),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: () => ref.read(currentUserProvider.notifier).logout(),
+                      icon: const Icon(Icons.logout),
+                      label: const Text('LOGOUT'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red.shade100,
+                        foregroundColor: Colors.red.shade700,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 100),
                 ],
               ),
             ),

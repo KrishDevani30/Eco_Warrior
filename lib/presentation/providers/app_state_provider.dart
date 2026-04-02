@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:uuid/uuid.dart';
 import '../../data/repositories/local_repository.dart';
 import '../../data/models/user_model.dart';
 import '../../data/models/waste_log_model.dart';
@@ -9,6 +10,10 @@ class CurrentUserNotifier extends Notifier<UserModel?> {
   UserModel? build() => null;
   void set(UserModel? user) => state = user;
   
+  void logout() {
+    state = null;
+  }
+
   Future<void> updateName(String newName) async {
     if (state == null) return;
     final updatedUser = state!.copyWith(name: newName);
@@ -37,6 +42,33 @@ class WasteLogNotifier extends Notifier<List<WasteLogModel>> {
     
     await ref.read(localRepositoryProvider).addWasteLog(log);
     state = ref.read(localRepositoryProvider).getWasteLogs().where((l) => l.userId == user.id).toList();
+    
+    // Refresh Admin providers
+    ref.invalidate(allWasteLogsProvider);
+  }
+
+  Future<void> requestPickupFromLog(WasteLogModel log, String address) async {
+    final user = ref.read(currentUserProvider);
+    if (user == null) return;
+
+    final newRequest = PickupRequestModel(
+      id: Uuid().v4(),
+      scheduledDate: DateTime.now().add(const Duration(days: 1)),
+      address: address,
+      latitude: 0,
+      longitude: 0,
+      status: 'Scheduled',
+      userId: user.id,
+      wasteLogId: log.id,
+    );
+
+    await ref.read(localRepositoryProvider).addPickup(newRequest);
+    
+    // Refresh all related providers
+    state = ref.read(localRepositoryProvider).getWasteLogs().where((l) => l.userId == user.id).toList();
+    ref.invalidate(pickupRequestsProvider);
+    ref.invalidate(allPickupRequestsProvider);
+    ref.invalidate(allWasteLogsProvider);
   }
 }
 
@@ -75,8 +107,10 @@ class PickupRequestNotifier extends Notifier<List<PickupRequestModel>> {
     await ref.read(localRepositoryProvider).updatePickupStatus(id, newStatus);
     state = ref.read(localRepositoryProvider).getPickups().where((p) => p.userId == user.id).toList();
     
-    // Also invalidate the global list if needed
+    // Refresh Admin and related providers
+    ref.invalidate(wasteLogsProvider);
     ref.invalidate(allPickupRequestsProvider);
+    ref.invalidate(allWasteLogsProvider);
   }
 }
 
@@ -90,7 +124,6 @@ final allWasteLogsProvider = Provider<List<WasteLogModel>>((ref) {
 });
 
 final userPointsProvider = Provider<int>((ref) {
-  final logs = ref.watch(wasteLogsProvider);
-  final pickups = ref.watch(pickupRequestsProvider);
-  return (logs.length * 10) + (pickups.length * 50);
+  final user = ref.watch(currentUserProvider);
+  return user?.points.toInt() ?? 0;
 });

@@ -15,11 +15,15 @@ class UserModel extends HiveObject {
   @HiveField(3)
   final bool isAdmin;
 
+  @HiveField(4)
+  final double points;
+
   UserModel({
     required this.id,
     required this.email,
     required this.name,
     this.isAdmin = false,
+    this.points = 0.0,
   });
 
   UserModel copyWith({
@@ -27,12 +31,14 @@ class UserModel extends HiveObject {
     String? email,
     String? name,
     bool? isAdmin,
+    double? points,
   }) {
     return UserModel(
       id: id ?? this.id,
       email: email ?? this.email,
       name: name ?? this.name,
       isAdmin: isAdmin ?? this.isAdmin,
+      points: points ?? this.points,
     );
   }
 }

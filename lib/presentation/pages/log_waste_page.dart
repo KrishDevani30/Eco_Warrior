@@ -7,6 +7,8 @@ import '../widgets/premium_header.dart';
 import '../../data/models/waste_log_model.dart';
 import '../providers/app_state_provider.dart';
 
+import 'package:geolocator/geolocator.dart';
+
 class LogWastePage extends ConsumerStatefulWidget {
   const LogWastePage({super.key});
 
@@ -14,11 +16,11 @@ class LogWastePage extends ConsumerStatefulWidget {
   ConsumerState<LogWastePage> createState() => _LogWastePageState();
 }
 
-
 class _LogWastePageState extends ConsumerState<LogWastePage> {
   String _selectedCategory = 'Organic';
   double _quantity = 1.0;
   XFile? _pickedImage;
+  bool _isLocating = false;
   final _categories = ['Organic', 'Plastic', 'E-Waste', 'Glass', 'Paper'];
 
   Future<void> _pickImage() async {
@@ -29,10 +31,23 @@ class _LogWastePageState extends ConsumerState<LogWastePage> {
     }
   }
 
-  void _submit() {
+  Future<void> _submit() async {
     final user = ref.read(currentUserProvider);
     if (user == null) return;
+
+    setState(() => _isLocating = true);
     
+    String locationStr = 'Nadiad, Gujarat (Manual)';
+    try {
+      final position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.low,
+        timeLimit: const Duration(seconds: 3),
+      );
+      locationStr = 'GPS: ${position.latitude.toStringAsFixed(4)}, ${position.longitude.toStringAsFixed(4)}';
+    } catch (e) {
+      // Fallback already set
+    }
+
     final newLog = WasteLogModel(
       id: const Uuid().v4(),
       category: _selectedCategory,
@@ -41,17 +56,23 @@ class _LogWastePageState extends ConsumerState<LogWastePage> {
       isSynced: false,
       userId: user.id,
       imagePath: _pickedImage?.path,
-    );
-    ref.read(wasteLogsProvider.notifier).addLog(newLog);
-    
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Waste successfully logged! Points earned! 🚀')),
+      location: locationStr,
+      pickupStatus: 'Not Requested',
     );
     
-    setState(() {
-      _quantity = 1.0;
-      _pickedImage = null;
-    });
+    await ref.read(wasteLogsProvider.notifier).addLog(newLog);
+    
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Waste successfully logged! 🚀')),
+      );
+      
+      setState(() {
+        _quantity = 1.0;
+        _pickedImage = null;
+        _isLocating = false;
+      });
+    }
   }
 
   @override
@@ -142,12 +163,13 @@ class _LogWastePageState extends ConsumerState<LogWastePage> {
                 ),
                 const SizedBox(height: 32),
                 ElevatedButton(
-                  onPressed: _submit,
+                  onPressed: _isLocating ? null : _submit,
                   style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
-                  child: const Text('LOG WASTE',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  child: _isLocating 
+                    ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                    : const Text('LOG WASTE', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                 ),
                 const SizedBox(height: 100),
               ],

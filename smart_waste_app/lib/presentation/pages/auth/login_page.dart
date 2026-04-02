@@ -29,7 +29,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     ref.invalidate(wasteLogsProvider);
     ref.invalidate(pickupRequestsProvider);
     
-    if (mounted) context.go('/home');
+    if (mounted) context.go('/');
   }
 
   @override

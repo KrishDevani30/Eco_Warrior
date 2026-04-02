@@ -51,6 +51,22 @@ class LocalRepository {
     return newUser;
   }
 
+  Future<void> updateWasteLogStatus(String id, String newStatus) async {
+    final box = Hive.box<WasteLogModel>(_wasteBox);
+    final log = box.get(id);
+    if (log != null) {
+      await box.put(id, log.copyWith(pickupStatus: newStatus));
+    }
+  }
+
+  Future<void> updateUserPoints(String userId, double additionalPoints) async {
+    final box = Hive.box<UserModel>(_userBox);
+    final user = box.get(userId);
+    if (user != null) {
+      await box.put(userId, user.copyWith(points: user.points + additionalPoints));
+    }
+  }
+
   // Waste Logs
   List<WasteLogModel> getWasteLogs() {
     final box = Hive.box<WasteLogModel>(_wasteBox);
@@ -71,10 +87,20 @@ class LocalRepository {
   Future<void> addPickup(PickupRequestModel request) async {
     final box = Hive.box<PickupRequestModel>(_pickupBox);
     await box.put(request.id, request);
+    
+    // Workflow: Update linked waste log status
+    if (request.wasteLogId != null) {
+      await updateWasteLogStatus(request.wasteLogId!, 'Requested');
+    }
   }
 
   Future<void> deletePickup(String id) async {
     final box = Hive.box<PickupRequestModel>(_pickupBox);
+    final request = box.get(id);
+    if (request != null && request.wasteLogId != null) {
+      // Revert waste log status if pickup is cancelled/deleted
+      await updateWasteLogStatus(request.wasteLogId!, 'Not Requested');
+    }
     await box.delete(id);
   }
 
@@ -82,7 +108,23 @@ class LocalRepository {
     final box = Hive.box<PickupRequestModel>(_pickupBox);
     final request = box.get(id);
     if (request != null) {
+      final oldStatus = request.status;
       await box.put(id, request.copyWith(status: newStatus));
+      
+      // Sync with Waste Log
+      if (request.wasteLogId != null) {
+        await updateWasteLogStatus(request.wasteLogId!, newStatus);
+      }
+
+      // Reward points ONLY if transitioning TO Completed for the first time
+      if (newStatus == 'Completed' && oldStatus != 'Completed') {
+        final wasteBox = Hive.box<WasteLogModel>(_wasteBox);
+        final log = wasteBox.get(request.wasteLogId);
+        if (log != null) {
+          double pointsToAdd = log.quantity * 10;
+          await updateUserPoints(request.userId, pointsToAdd);
+        }
+      }
     }
   }
   

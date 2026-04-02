@@ -25,6 +25,9 @@ class PickupRequestModel extends HiveObject {
   @HiveField(6)
   final String userId;
 
+  @HiveField(7)
+  final String? wasteLogId; // Link to the specific waste entry
+
   PickupRequestModel({
     required this.id,
     required this.scheduledDate,
@@ -33,6 +36,7 @@ class PickupRequestModel extends HiveObject {
     required this.longitude,
     required this.status,
     required this.userId,
+    this.wasteLogId,
   });
 
   PickupRequestModel copyWith({
@@ -43,6 +47,7 @@ class PickupRequestModel extends HiveObject {
     double? longitude,
     String? status,
     String? userId,
+    String? wasteLogId,
   }) {
     return PickupRequestModel(
       id: id ?? this.id,
@@ -52,6 +57,7 @@ class PickupRequestModel extends HiveObject {
       longitude: longitude ?? this.longitude,
       status: status ?? this.status,
       userId: userId ?? this.userId,
+      wasteLogId: wasteLogId ?? this.wasteLogId,
     );
   }
 }

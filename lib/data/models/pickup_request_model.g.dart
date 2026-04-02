@@ -24,13 +24,14 @@ class PickupRequestModelAdapter extends TypeAdapter<PickupRequestModel> {
       longitude: fields[4] as double,
       status: fields[5] as String,
       userId: fields[6] as String,
+      wasteLogId: fields[7] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, PickupRequestModel obj) {
     writer
-      ..writeByte(7)
+      ..writeByte(8)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -44,7 +45,9 @@ class PickupRequestModelAdapter extends TypeAdapter<PickupRequestModel> {
       ..writeByte(5)
       ..write(obj.status)
       ..writeByte(6)
-      ..write(obj.userId);
+      ..write(obj.userId)
+      ..writeByte(7)
+      ..write(obj.wasteLogId);
   }
 
   @override

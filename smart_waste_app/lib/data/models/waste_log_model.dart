@@ -25,6 +25,12 @@ class WasteLogModel extends HiveObject {
   @HiveField(6)
   final String userId;
 
+  @HiveField(7)
+  final String pickupStatus; // 'Not Requested', 'Requested', 'Approved', 'Completed', 'Rejected'
+
+  @HiveField(8)
+  final String location; // 'GPS: Lat, Lng'
+
   WasteLogModel({
     required this.id,
     required this.category,
@@ -33,5 +39,31 @@ class WasteLogModel extends HiveObject {
     this.isSynced = false,
     this.imagePath,
     required this.userId,
+    this.pickupStatus = 'Not Requested',
+    this.location = 'Unknown',
   });
+
+  WasteLogModel copyWith({
+    String? id,
+    String? category,
+    double? quantity,
+    DateTime? date,
+    bool? isSynced,
+    String? imagePath,
+    String? userId,
+    String? pickupStatus,
+    String? location,
+  }) {
+    return WasteLogModel(
+      id: id ?? this.id,
+      category: category ?? this.category,
+      quantity: quantity ?? this.quantity,
+      date: date ?? this.date,
+      isSynced: isSynced ?? this.isSynced,
+      imagePath: imagePath ?? this.imagePath,
+      userId: userId ?? this.userId,
+      pickupStatus: pickupStatus ?? this.pickupStatus,
+      location: location ?? this.location,
+    );
+  }
 }
