@@ -1,4 +1,4 @@
-# Smart Waste Management & Recycling App 🌱
+# Eco_Warrior — Smart Waste Management & Recycling App
 
 An offline-first, highly scalable application built for Smart Waste Management. Developed with Flutter, Riverpod, and Hive.
 
