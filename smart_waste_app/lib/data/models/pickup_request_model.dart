@@ -34,4 +34,24 @@ class PickupRequestModel extends HiveObject {
     required this.status,
     required this.userId,
   });
+
+  PickupRequestModel copyWith({
+    String? id,
+    DateTime? scheduledDate,
+    String? address,
+    double? latitude,
+    double? longitude,
+    String? status,
+    String? userId,
+  }) {
+    return PickupRequestModel(
+      id: id ?? this.id,
+      scheduledDate: scheduledDate ?? this.scheduledDate,
+      address: address ?? this.address,
+      latitude: latitude ?? this.latitude,
+      longitude: longitude ?? this.longitude,
+      status: status ?? this.status,
+      userId: userId ?? this.userId,
+    );
+  }
 }

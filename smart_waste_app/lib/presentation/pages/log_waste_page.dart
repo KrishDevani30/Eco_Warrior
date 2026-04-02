@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 import '../widgets/premium_header.dart';
 import '../../data/models/waste_log_model.dart';
 import '../providers/app_state_provider.dart';
@@ -12,10 +14,20 @@ class LogWastePage extends ConsumerStatefulWidget {
   ConsumerState<LogWastePage> createState() => _LogWastePageState();
 }
 
+
 class _LogWastePageState extends ConsumerState<LogWastePage> {
   String _selectedCategory = 'Organic';
   double _quantity = 1.0;
+  XFile? _pickedImage;
   final _categories = ['Organic', 'Plastic', 'E-Waste', 'Glass', 'Paper'];
+
+  Future<void> _pickImage() async {
+    final picker = ImagePicker();
+    final image = await picker.pickImage(source: ImageSource.camera);
+    if (image != null) {
+      setState(() => _pickedImage = image);
+    }
+  }
 
   void _submit() {
     final user = ref.read(currentUserProvider);
@@ -28,6 +40,7 @@ class _LogWastePageState extends ConsumerState<LogWastePage> {
       date: DateTime.now(),
       isSynced: false,
       userId: user.id,
+      imagePath: _pickedImage?.path,
     );
     ref.read(wasteLogsProvider.notifier).addLog(newLog);
     
@@ -37,6 +50,7 @@ class _LogWastePageState extends ConsumerState<LogWastePage> {
     
     setState(() {
       _quantity = 1.0;
+      _pickedImage = null;
     });
   }
 
@@ -47,8 +61,7 @@ class _LogWastePageState extends ConsumerState<LogWastePage> {
     return CustomScrollView(
       slivers: [
         const PremiumHeader(title: 'Log Waste', subtitle: 'Every item counts', icon: Icons.recycling),
-        SliverFillRemaining(
-          hasScrollBody: false,
+        SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.all(24.0),
             child: Column(
@@ -107,23 +120,36 @@ class _LogWastePageState extends ConsumerState<LogWastePage> {
                         color: colors.primary),
                   ),
                 ),
-                const Spacer(),
+                const SizedBox(height: 32),
+                const Text('Attachment (Optional)',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 12),
+                if (_pickedImage != null)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 12.0),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: Image.file(File(_pickedImage!.path), height: 200, width: double.infinity, fit: BoxFit.cover),
+                    ),
+                  ),
                 ElevatedButton.icon(
                   icon: const Icon(Icons.camera_alt_outlined),
-                  label: const Text('Add Photo (Optional)'),
+                  label: Text(_pickedImage == null ? 'Capture Waste Photo' : 'Change Photo'),
                   style: ElevatedButton.styleFrom(
                       backgroundColor: colors.secondaryContainer,
                       foregroundColor: colors.onSecondaryContainer),
-                  onPressed: () {},
+                  onPressed: _pickImage,
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 32),
                 ElevatedButton(
                   onPressed: _submit,
                   style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16)),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
                   child: const Text('LOG WASTE',
                       style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                 ),
+                const SizedBox(height: 100),
               ],
             ),
           ),

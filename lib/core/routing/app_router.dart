@@ -3,17 +3,22 @@ import 'package:flutter/material.dart';
 
 import '../../presentation/pages/home_page.dart';
 import '../../presentation/pages/auth/login_page.dart';
+import '../../presentation/pages/profile_page.dart';
 
 final appRouter = GoRouter(
-  initialLocation: '/login', // Start at login for Auth testing
+  initialLocation: '/login',
   routes: [
     GoRoute(
       path: '/login',
       builder: (context, state) => const LoginPage(),
     ),
     GoRoute(
-      path: '/home',
+      path: '/',
       builder: (context, state) => const HomePage(),
+    ),
+    GoRoute(
+      path: '/profile',
+      builder: (context, state) => const ProfilePage(),
     ),
   ],
 );

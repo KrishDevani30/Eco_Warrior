@@ -8,6 +8,13 @@ class CurrentUserNotifier extends Notifier<UserModel?> {
   @override
   UserModel? build() => null;
   void set(UserModel? user) => state = user;
+  
+  Future<void> updateName(String newName) async {
+    if (state == null) return;
+    final updatedUser = state!.copyWith(name: newName);
+    await ref.read(localRepositoryProvider).updateUserName(updatedUser);
+    state = updatedUser;
+  }
 }
 
 final currentUserProvider = NotifierProvider<CurrentUserNotifier, UserModel?>(() => CurrentUserNotifier());
@@ -52,7 +59,35 @@ class PickupRequestNotifier extends Notifier<List<PickupRequestModel>> {
     await ref.read(localRepositoryProvider).addPickup(request);
     state = ref.read(localRepositoryProvider).getPickups().where((p) => p.userId == user.id).toList();
   }
+
+  Future<void> deleteRequest(String id) async {
+    final user = ref.read(currentUserProvider);
+    if (user == null) return;
+    
+    await ref.read(localRepositoryProvider).deletePickup(id);
+    state = ref.read(localRepositoryProvider).getPickups().where((p) => p.userId == user.id).toList();
+  }
+
+  Future<void> updateStatus(String id, String newStatus) async {
+    final user = ref.read(currentUserProvider);
+    if (user == null) return;
+    
+    await ref.read(localRepositoryProvider).updatePickupStatus(id, newStatus);
+    state = ref.read(localRepositoryProvider).getPickups().where((p) => p.userId == user.id).toList();
+    
+    // Also invalidate the global list if needed
+    ref.invalidate(allPickupRequestsProvider);
+  }
 }
+
+// Admin Providers
+final allPickupRequestsProvider = Provider<List<PickupRequestModel>>((ref) {
+  return ref.watch(localRepositoryProvider).getPickups();
+});
+
+final allWasteLogsProvider = Provider<List<WasteLogModel>>((ref) {
+  return ref.watch(localRepositoryProvider).getWasteLogs();
+});
 
 final userPointsProvider = Provider<int>((ref) {
   final logs = ref.watch(wasteLogsProvider);

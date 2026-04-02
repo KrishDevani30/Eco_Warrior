@@ -4,6 +4,8 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'core/theme/app_theme.dart';
 import 'core/routing/app_router.dart';
 
+import 'presentation/providers/theme_provider.dart';
+import 'presentation/providers/app_state_provider.dart';
 import 'data/repositories/local_repository.dart';
 
 void main() async {
@@ -11,6 +13,7 @@ void main() async {
   
   // Initialize Local Storage
   await Hive.initFlutter();
+  await ThemeNotifier.init(); // Initialize settings box
   final repo = LocalRepository();
   await repo.init();
   
@@ -22,16 +25,18 @@ void main() async {
   ));
 }
 
-class SmartWasteApp extends StatelessWidget {
+class SmartWasteApp extends ConsumerWidget {
   const SmartWasteApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final themeMode = ref.watch(themeProvider);
+    
     return MaterialApp.router(
       title: 'EcoSmart Waste',
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.system, // Supports dark/light mode
+      themeMode: themeMode,
       routerConfig: appRouter,
     );
   }

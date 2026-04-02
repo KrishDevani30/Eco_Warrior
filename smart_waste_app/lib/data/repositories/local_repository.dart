@@ -19,13 +19,15 @@ class LocalRepository {
     Hive.registerAdapter(WasteLogModelAdapter());
     Hive.registerAdapter(PickupRequestModelAdapter());
     
-    // Clear boxes to support structural update (One-time migration)
-    await Hive.deleteBoxFromDisk(_wasteBox);
-    await Hive.deleteBoxFromDisk(_pickupBox);
-
+    // Ensure boxes are open (Persistence is maintained)
     await Hive.openBox<UserModel>(_userBox);
     await Hive.openBox<WasteLogModel>(_wasteBox);
     await Hive.openBox<PickupRequestModel>(_pickupBox);
+  }
+
+  Future<void> updateUserName(UserModel user) async {
+    final box = Hive.box<UserModel>(_userBox);
+    await box.put(user.id, user);
   }
 
   // Auth Users
@@ -42,6 +44,7 @@ class LocalRepository {
       id: const Uuid().v4(),
       email: email,
       name: email.split('@')[0], // Generate dummy name from email
+      isAdmin: email.toLowerCase() == 'admin@eco.com',
     );
     
     await box.put(newUser.id, newUser);
@@ -68,6 +71,19 @@ class LocalRepository {
   Future<void> addPickup(PickupRequestModel request) async {
     final box = Hive.box<PickupRequestModel>(_pickupBox);
     await box.put(request.id, request);
+  }
+
+  Future<void> deletePickup(String id) async {
+    final box = Hive.box<PickupRequestModel>(_pickupBox);
+    await box.delete(id);
+  }
+
+  Future<void> updatePickupStatus(String id, String newStatus) async {
+    final box = Hive.box<PickupRequestModel>(_pickupBox);
+    final request = box.get(id);
+    if (request != null) {
+      await box.put(id, request.copyWith(status: newStatus));
+    }
   }
   
   // Dashboard stats
